@@ -1,0 +1,20 @@
+package com.example.demo.domain.dto;
+
+import lombok.Builder;
+import lombok.Data;
+
+import java.util.List;
+
+@Data
+@Builder
+public class EmployeesByCompanyDTO {
+
+    private Long companyId;
+
+    private String companyName;
+
+    private String cnpj;
+
+    private List<EmployeeResponseDTO> funcionarios;
+
+}
