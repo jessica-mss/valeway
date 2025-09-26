@@ -21,7 +21,7 @@ public class EmployeeService {
     private final EmployeeRepository repository;
     private final CompanyRepository companyRepository;
 
-    public Employee create(EmployeeRequestDTO dto) {
+    public EmployeeResponseDTO create(EmployeeRequestDTO dto) {
         Company company = companyRepository.findById(dto.getCompanyId())
                 .orElseThrow(() -> new EntityNotFoundException("Empresa  não encontrada"));
 
@@ -34,24 +34,28 @@ public class EmployeeService {
                 .company(company)
                 .build();
 
-        return repository.save(employee);
+        Employee post = repository.save(employee);
+
+        return EmployeeResponseDTO.fromEntity(post);
     }
 
-    public Employee update(Long id, EmployeeRequestDTO dto) {
+    public EmployeeResponseDTO update(Long id, EmployeeRequestDTO requestBody) {
         Employee employee = repository.findById(id)
                 .orElseThrow(() -> new EmployeeNotFoundException("Funcionário não encontrado"));
 
-        Company company = companyRepository.findById(dto.getCompanyId())
+        Company company = companyRepository.findById(requestBody.getCompanyId())
                 .orElseThrow(() -> new CompanyNotFoundException("Empresa não encontrada"));
 
-        employee.setName(dto.getName());
-        employee.setCpf(dto.getCpf());
-        employee.setSalary(dto.getSalary());
-        employee.setAddress(dto.getAddress());
-        employee.setRegistration(dto.getRegistration());
+        employee.setName(requestBody.getName());
+        employee.setCpf(requestBody.getCpf());
+        employee.setSalary(requestBody.getSalary());
+        employee.setAddress(requestBody.getAddress());
+        employee.setRegistration(requestBody.getRegistration());
         employee.setCompany(company);
 
-        return repository.save(employee);
+        Employee updated = repository.save(employee);
+
+        return EmployeeResponseDTO.fromEntity(updated);
     }
 
     public void delete(Long id) {

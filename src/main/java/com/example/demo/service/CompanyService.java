@@ -1,7 +1,7 @@
 package com.example.demo.service;
 
-
 import com.example.demo.domain.dto.CompanyRequestDTO;
+import com.example.demo.domain.dto.CompanyResponseDTO;
 import com.example.demo.domain.dto.EmployeeResponseDTO;
 import com.example.demo.domain.dto.EmployeesByCompanyDTO;
 import com.example.demo.domain.representation.Company;
@@ -22,7 +22,7 @@ public class CompanyService {
         this.repository = repository;
     }
 
-    public Company create(CompanyRequestDTO dto) {
+    public CompanyResponseDTO create(CompanyRequestDTO dto) {
         Company company = Company.builder()
                 .companyName(dto.getCompanyName())
                 .cnpj(dto.getCnpj())
@@ -32,20 +32,28 @@ public class CompanyService {
                 .contactPersonName(dto.getContactPersonName())
                 .status(dto.getStatus())
                 .build();
-        return repository.save(company);
+
+        return CompanyResponseDTO.fromEntity(repository.save(company));
     }
 
-    public List<Company> getAll() {
-        return repository.findAll();
+    public List<CompanyResponseDTO> getAll() {
+        return repository.findAll()
+                .stream()
+                .map(CompanyResponseDTO::fromEntity)
+                .toList();
     }
 
-    public Company getById(Long id) {
-        return repository.findById(id)
+    public CompanyResponseDTO getById(Long id) {
+        Company company = repository.findById(id)
                 .orElseThrow(() -> new CompanyNotFoundException("Company not found"));
+
+        return CompanyResponseDTO.fromEntity(company);
     }
 
-    public Company update(Long id, CompanyRequestDTO dto) {
-        Company company = getById(id);
+    public CompanyResponseDTO update(Long id, CompanyRequestDTO dto) {
+        Company company = repository.findById(id)
+                .orElseThrow(() -> new CompanyNotFoundException("Company not found"));
+
         company.setCompanyName(dto.getCompanyName());
         company.setCnpj(dto.getCnpj());
         company.setAddress(dto.getAddress());
@@ -53,13 +61,14 @@ public class CompanyService {
         company.setContactPhone(dto.getContactPhone());
         company.setContactPersonName(dto.getContactPersonName());
         company.setStatus(dto.getStatus());
-        return repository.save(company);
+
+        return CompanyResponseDTO.fromEntity(repository.save(company));
     }
 
-
     public void delete(Long id) {
-        Company Company = getById(id);
-        repository.delete(Company);
+        Company company = repository.findById(id)
+                .orElseThrow(() -> new CompanyNotFoundException("Company not found"));
+        repository.delete(company);
     }
 
     public EmployeesByCompanyDTO buscarEmpresaComFuncionarios(Long idEmpresa) {

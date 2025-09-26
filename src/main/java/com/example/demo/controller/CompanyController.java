@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.domain.dto.CompanyRequestDTO;
+import com.example.demo.domain.dto.CompanyResponseDTO;
 import com.example.demo.domain.dto.EmployeesByCompanyDTO;
 import com.example.demo.domain.representation.Company;
 import com.example.demo.service.CompanyService;
@@ -23,8 +24,8 @@ public class CompanyController {
     }
 
     @PostMapping
-    public ResponseEntity<Company> criar(@RequestBody @Valid CompanyRequestDTO dto) {
-        Company createdCompany = service.create(dto);
+    public ResponseEntity<CompanyResponseDTO> criar(@RequestBody @Valid CompanyRequestDTO dto) {
+        CompanyResponseDTO createdCompany = service.create(dto);
 
         URI location = URI.create("/company/" + createdCompany.getId());
 
@@ -34,17 +35,17 @@ public class CompanyController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Company>> listar() {
+    public ResponseEntity<List<CompanyResponseDTO>> listar() {
         return ResponseEntity.ok(service.getAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Company> buscar(@PathVariable Long id) {
+    public ResponseEntity<CompanyResponseDTO> buscar(@PathVariable Long id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Company> atualizar(@PathVariable Long id, @RequestBody @Valid CompanyRequestDTO dto) {
+    public ResponseEntity<CompanyResponseDTO> atualizar(@PathVariable Long id, @RequestBody @Valid CompanyRequestDTO dto) {
         return ResponseEntity.ok(service.update(id, dto));
     }
 

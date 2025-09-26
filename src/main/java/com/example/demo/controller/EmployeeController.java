@@ -21,8 +21,8 @@ public class EmployeeController {
     private final EmployeeService service;
 
     @PostMapping
-    public ResponseEntity<Employee> create(@RequestBody @Valid EmployeeRequestDTO dto) {
-        Employee created = service.create(dto);
+    public ResponseEntity<EmployeeResponseDTO> create(@RequestBody @Valid EmployeeRequestDTO dto) {
+        EmployeeResponseDTO created = service.create(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
@@ -37,7 +37,7 @@ public class EmployeeController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Employee> update(@PathVariable Long id, @RequestBody @Valid EmployeeRequestDTO dto) {
+    public ResponseEntity<EmployeeResponseDTO> update(@PathVariable Long id, @RequestBody @Valid EmployeeRequestDTO dto) {
         return ResponseEntity.ok(service.update(id, dto));
     }
 
