@@ -4,6 +4,7 @@ import com.example.demo.domain.*;
 import com.example.demo.domain.representation.RoteirizacaoDetalhadaRepresentation;
 import com.example.demo.domain.representation.RoteirizacaoRepresentation;
 import com.example.demo.service.RoteirizacaoService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +24,12 @@ public class RoteirizacaoController {
     public RoteirizacaoRepresentation solicitarRoteirizacao(@RequestBody CoordenadasRoteirizacaoRequest request) throws Exception {
         return roteirizacaoService.calcularRoteirizacao(request);
     }
+
+//    @PostMapping("/salvar")
+//    public ResponseEntity<?> salvar(@RequestBody RoteirizacaoDetalhadaRepresentation dto) {
+//        roteirizacaoService.salvarRoteirizacao(dto);
+//        return ResponseEntity.ok().build();
+//    }
 }
 
 

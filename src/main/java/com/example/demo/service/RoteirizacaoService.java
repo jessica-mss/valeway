@@ -1,15 +1,19 @@
 package com.example.demo.service;
 
 import com.example.demo.domain.CoordenadasRoteirizacaoRequest;
+import com.example.demo.domain.TarifaEnum;
 import com.example.demo.domain.representation.RoteirizacaoDetalhadaRepresentation;
 import com.example.demo.domain.representation.RoteirizacaoRepresentation;
 import com.example.demo.domain.representation.StepRepresentation;
 import com.example.demo.domain.representation.TransporteRepresentation;
+import com.example.demo.repository.RoteirizacaoRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -18,11 +22,18 @@ import java.util.List;
 @Service
 public class RoteirizacaoService {
 
-    private final RestTemplate restTemplate = new RestTemplate();
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final RestTemplate restTemplate;
+    private final ObjectMapper mapper;
+    private final RoteirizacaoRepository repository;
 
     @Value("${google.api.key}")
     private String apiKey;
+
+    public RoteirizacaoService(RoteirizacaoRepository repository, RestTemplate restTemplate, ObjectMapper mapper) {
+        this.repository = repository;
+        this.restTemplate = restTemplate;
+        this.mapper = mapper;
+    }
 
     public RoteirizacaoRepresentation calcularRoteirizacao(CoordenadasRoteirizacaoRequest request) throws Exception {
 
@@ -34,7 +45,6 @@ public class RoteirizacaoService {
                 request.getEnderecoDestino(),
                 "ida"
         );
-        ida.setValor(BigDecimal.valueOf(8));
         detalhes.add(ida);
 
         // ==== SENTIDO VOLTA ====
@@ -43,8 +53,6 @@ public class RoteirizacaoService {
                 request.getEnderecoOrigem(),
                 "volta"
         );
-
-        volta.setValor(BigDecimal.valueOf(8));
         detalhes.add(volta);
 
         RoteirizacaoRepresentation resultado = new RoteirizacaoRepresentation();
@@ -54,6 +62,15 @@ public class RoteirizacaoService {
     }
 
     private RoteirizacaoDetalhadaRepresentation criarDetalheRoteiro(String origem, String destino, String sentido) throws Exception {
+
+//        String url = UriComponentsBuilder
+//                .fromHttpUrl("https://maps.googleapis.com/maps/api/directions/json")
+//                .queryParam("origin", origem)
+//                .queryParam("destination", destino)
+//                .queryParam("mode", "transit")
+//                .queryParam("key", apiKey)
+//                .toUriString();
+
         String url = "https://maps.googleapis.com/maps/api/directions/json"
 //                + "?origin=" + URLEncoder.encode(origem, StandardCharsets.UTF_8)
 //                + "&destination=" + URLEncoder.encode(destino, StandardCharsets.UTF_8)
@@ -79,7 +96,7 @@ public class RoteirizacaoService {
         List<StepRepresentation> percurso = new ArrayList<>();
 
         for (JsonNode stepNode : leg.path("steps")) {
-            if (!"TRANSIT".equals(stepNode.path("travel_mode").asText())) continue;
+            if (!"TRANSIT".equalsIgnoreCase(stepNode.path("travel_mode").asText())) continue;
 
             StepRepresentation step = new StepRepresentation();
             step.setTravel_mode("TRANSIT");
@@ -92,11 +109,18 @@ public class RoteirizacaoService {
             transporte.setTipo(stepNode.path("transit_details").path("line").path("vehicle").path("type").asText());
 
             step.setTransporte(transporte);
-
             percurso.add(step);
         }
 
         detalhe.setPercurso(percurso);
+
+        // Calcula automaticamente o valor da tarifa
+        List<String> tiposTransporte = detalhe.getPercurso().stream()
+                .map(step -> step.getTransporte().getTipo())
+                .toList();
+
+        BigDecimal valorTarifa = TarifaEnum.defineValorTarifa(tiposTransporte).getValor();
+        detalhe.setValor(valorTarifa);
 
         return detalhe;
     }
