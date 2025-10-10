@@ -20,7 +20,7 @@ public class RoteirizacaoController {
         this.roteirizacaoService = roteirizacaoService;
     }
 
-    @PostMapping("/roteirizacao")
+    @PostMapping("/roteirizacao/solicitacao")
     public RoteirizacaoRepresentation solicitarRoteirizacao(@RequestBody CoordenadasRoteirizacaoRequest request) throws Exception {
         return roteirizacaoService.calcularRoteirizacao(request);
     }
